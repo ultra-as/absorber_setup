@@ -17,9 +17,7 @@ class Creature:
 
 
 setAutoUpdate(False)
-creatures = []
-for i in range(10):
-    creatures.append(Creature(random.randint(0,1000),random.randint(0,1000), "enemy.png", random.randint(10,100)) )
+c1 = Creature(random.randint(0,1000),random.randint(0,1000), "enemy.png", random.randint(10,100)) 
 
 updateDisplay()
         
