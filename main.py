@@ -1,7 +1,10 @@
 from pygame_functions import *
 import math, random, time, pickle
 
-screenSize(1000,1000)
+height = 1000
+width = 1000
+
+screenSize(height,width)
 setBackgroundColour("black")
 
 
@@ -24,8 +27,8 @@ class Creature:
     def move(self):
         xSpeed = self.speed * math.cos(self.angle/180*math.pi)
         ySpeed = self.speed * math.sin(self.angle/180*math.pi)
-        self.x = (self.x + xSpeed) % 1000
-        self.y = (self.y + ySpeed) % 1000
+        self.x = (self.x + xSpeed) % width
+        self.y = (self.y + ySpeed) % height
         moveSprite(self.sprite,self.x,self.y, centre = True)
 
 
@@ -34,18 +37,33 @@ class Player(Creature):
         super().__init__(x,y,image,size, ranking, powerUp)
         
     
-    def move(self):
-        xPos = mouseX()
-        yPos = mouseY()
-        angle = math.atan2(xPos,yPos)math.pi * 180
-        speed = 0
+    def move(self, creatures):
+        xPos = mouseX() - self.x
+        yPos = mouseY() - self.y
+        distance = math.sqrt(xPos**2 + yPos**2)
+        self.speed = distance / 200 * 10
+        self.angle = math.degrees(math.atan2(yPos,xPos))
+        transformSprite(self.sprite,self.angle,self.size/100)
+        super().move()
+        
+        for c in creatures:
+            if(touching(self.sprite,c.sprite)):
+                if(self.size > c.size):
+                    print("Nom")
+                    creatures.remove(c)
+                    hideSprite(c.sprite)
+                    self.size += 5
+                elif(self.size < c.size):
+                    print("Dead")
+    
+    
 
 
 setAutoUpdate(False)
 creatures = []
 
-for i in range(15):
-    creatures.append(Creature(random.randint(0,1000),random.randint(0,1000), "realenemy.png", random.randint(10,100),0,0))
+for i in range(5):
+    creatures.append(Creature(random.randint(0,1000),random.randint(0,1000), "enemy1.png", random.randint(10,100),0,0))
 
 p1 = Player(random.randint(0,1000), random.randint(0,1000), "player1.png", random.randint(10,100),0,0)
 
@@ -54,6 +72,7 @@ updateDisplay()
 while(True):
     for c in creatures:
         c.move()
+    p1.move(creatures)
     updateDisplay()
     tick(50)
         
