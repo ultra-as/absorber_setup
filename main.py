@@ -14,7 +14,7 @@ class Creature:
         self.y = y
         self.size = size   # size is a percentage of the full size image
         self.ranking = ranking
-        self.speed = random.randint(1,15)
+        self.speed = 0
         self.angle = random.randint(1,360)
         self.powerUp = powerUp
         
@@ -36,12 +36,19 @@ class Creature:
             moveSprite(self.sprite,(500+(self.x - player.x)),(500+(self.y - player.y)), centre = True)
         
         
+class trailC(Creature):
+    def __init__(self,x,y,image,size,ranking,powerup):
+        super().__init__(x,y,image,size,ranking,powerup)
+        self.speed = 0
+    
+    
 
 
 class Player(Creature):
     def __init__(self,x,y,image,size,ranking,powerUp):
         super().__init__(x,y,image,size, ranking, powerUp)
         self.lastTrail = clock()
+        self.now = clock()
         moveSprite(self.sprite,500,500,centre=True)
         self.end = False
 
@@ -49,9 +56,7 @@ class Player(Creature):
     
     def move(self, creatures):
         if(not self.end):
-            now = clock()
-            if(now > self.lastTrail + 1000):
-                self.lastTrail = clock()
+            self.now = clock()
                 
             
             xPos = mouseX() - 500
@@ -80,7 +85,16 @@ class Player(Creature):
                     elif(self.size < c.size):
                         self.end = True
     
-    def trail(self):
+    def trail(self,trailList):
+        diff = self.lastTrail - self.now
+        if(diff >= 1000):
+            self.lastTrail = clock()
+            t = trailC(self.x,self.y,"enemy1.png",10,0,0)
+            if(len(trailList) >= 20):
+                gone = trailList.pop(0)
+                hideSprite(gone.sprite)
+            
+            trailList.append(t)
         
     
     
@@ -93,18 +107,27 @@ def drawBorder(player):
 
 setAutoUpdate(False)
 creatures = []
+trails = []
 
-for i in range(200):
+for i in range(1):
     creatures.append(Creature(random.randint(0,10000),random.randint(0,10000), "enemy1.png", random.randint(15,150),0,0))
 
 p1 = Player(5000, 5000, "player1.png", random.randint(30,40),0,0)
 
 
-
+count = 0
 while(not p1.end):
     for c in creatures:
+        if(count%100 == 0):
+            print("Creature: " + str(c.x) + "," + str(c.y))
         c.move(p1)
     p1.move(creatures)
+    p1.trail(trails)
+    for t in trails:
+        t.move(p1)
+    if(count%100 == 0):
+        print("Player: " + str(p1.x) + "," + str(p1.y))
+    count += 1
     drawBorder(p1)
     updateDisplay()
     tick(50)
